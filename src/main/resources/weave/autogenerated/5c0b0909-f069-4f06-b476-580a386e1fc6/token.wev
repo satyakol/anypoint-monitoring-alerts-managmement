@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_5c0b0909_f069_4f06_b476_580a386e1fc6_Output_Variables_bearer_token = Null
+

@@ -1,0 +1,8 @@
+%dw 2.0
+
+type auto_dbb0198c_d43d_486f_9b8a_82860fc74570_Output_Payload = {|
+  client_id: String, 
+  client_secret: String, 
+  grant_type: String
+|}
+

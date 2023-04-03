@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="anypointmonitoringalertsmgmtFlow" doc:id="ba240076-8a08-47f8-bbc2-00bd9a96113a">
+		<http:listener doc:name="Listener" doc:id="ac7b32c5-ed21-4eef-aea2-4c3bb8a447f6" config-ref="HTTP_Listener_config" path="/alerts" allowedMethods="POST"/>
+		<logger level="INFO" doc:name="Logger" doc:id="93ed2025-f619-4f3a-9ff8-52441029487e" message='"Request to Create Alerts is received"' />
+		<ee:transform doc:name="set-initial-variables" doc:id="2f61f2e4-e041-49a2-ae54-751672e7c074" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="orig-request-payload" ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="anypoint_get_oauth_accesstoken" doc:id="dedef124-8a1b-4862-a92a-3e23227b8b27" name="anypoint_get_oauth_accesstoken" />
+		<flow-ref doc:name="createalerts_main_flow" doc:id="b9efa873-2048-40e1-915c-4881d071cabd" name="createalerts_main_flow" />
+	</flow>
+	<sub-flow name="createalerts_main_flow" doc:id="9c43dbe8-2a56-4e8e-b9b6-95c29b0822c1" >
+		<logger level="INFO" doc:name="log_start_step" doc:id="b81ce3a5-19f1-4d6e-b32c-666ca18e198d" message="Starting the alerts creation Flow"/>
+		<choice doc:name="Use HTTP Request body or alerts.config.file property" doc:id="29c6148d-7ed4-4d44-934b-8de291095509" >
+			<when expression='#[!isEmpty(vars."orig-request-payload")]'>
+				<ee:transform doc:name="read_the_alert_details-from-payload" doc:id="ff27ea6b-d72a-4486-b771-f2054b5f5f86" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var alertsDataFile = vars."orig-request-payload"
+var masterOrgId = p("anypoint.master.org.id")
+var orgId = p("anypoint.org.id")
+var environmentId = p("anypoint.environment.id")
+var clusterId = p("anypoint.ch2.cluster.id")
+---
+flatten (
+alertsDataFile.applications map (app) -> app.alertId map (app_alert_id) -> {
+        (alertsDataFile.alerts filter ($.alertId contains app_alert_id) map (alert) -> {
+            "alertType" : alert.alertType,
+            "alertName" : alert.alertName,
+            "masterOrganizationId": masterOrgId,
+            "organizationId": orgId,
+            "resource": {
+                "type": "application",
+                "organizationId": orgId,
+                "environmentId": environmentId,
+                "deploymentType": "RTF",
+                "clusterId": clusterId,
+                "appId": app.appId
+            },
+            (alertsDataFile.metrics filter ($.metricId contains  alert.metricId) map (metric) ->
+                 metric.metricDetails
+             )
+        })
+}
+)
+]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<when expression='#[p("alerts.config.file") != null]'>
+				<ee:transform doc:name="read_the_alert_details" doc:id="da285bdc-c30b-4a69-a6d3-8c5e939a057e">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var alertsDataFile = readUrl("classpath://" ++ Mule::p("mule.env") ++ "/" ++ Mule::p("alerts.config.file"),"application/json")
+var masterOrgId = p("anypoint.master.org.id")
+var orgId = p("anypoint.org.id")
+var environmentId = p("anypoint.environment.id")
+var clusterId = p("anypoint.ch2.cluster.id")
+---
+flatten (
+alertsDataFile.applications map (app) -> app.alertId map (app_alert_id) -> {
+        (alertsDataFile.alerts filter ($.alertId contains app_alert_id) map (alert) -> {
+            "alertType" : alert.alertType,
+            "alertName" : alert.alertName,
+            "masterOrganizationId": masterOrgId,
+            "organizationId": orgId,
+            "resource": {
+                "type": "application",
+                "organizationId": orgId,
+                "environmentId": environmentId,
+                "deploymentType": "RTF",
+                "clusterId": clusterId,
+                "appId": app.appId
+            },
+            (alertsDataFile.metrics filter ($.metricId contains  alert.metricId) map (metric) ->
+                 metric.metricDetails
+             )
+        })
+}
+)
+]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+			</ee:variables>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<raise-error doc:name="Raise error" doc:id="6526c8b2-331f-40b8-80fa-f29386f00e83" type="INPUT:VALIDATIONS" description="Request to create Alerts to either send the Alerts configuration JSON data in POST Body or make sure the alerts.config.file property is set to the right alerts config JSON file "/>
+			</otherwise>
+		</choice>
+		<foreach doc:name="For Each" doc:id="e81c480c-ea31-4293-96d0-ffd8f3fda568" >
+			<flow-ref doc:name="createalerts_sub_flow" doc:id="afc291a2-0629-4322-b0e6-fb46d543ff16" name="createalerts_sub_flow"/>
+		</foreach>
+		<ee:transform doc:name="set-response-payload" doc:id="829071a1-4bdf-4609-b438-019067e1a160" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var summary = vars."alerts-creation-summary"
+---
+if(summary != null) {	
+	"AlertsCreationSummary":  
+		vars."alerts-creation-summary" map(alert) -> {
+	    	"alertId":alert.alertId,
+    		"alertName": alert.alertName,
+    		"applicationId": alert.resource.appId,
+  	    	"metricType":alert.metricType,
+    		"severity":alert.severity
+		},
+	"AlertsCreationDetails": vars."alerts-creation-summary"
+}
+else
+	{
+		"AlertsCreationSummary": "No Alerts were created"
+	}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="log-summary-csv" doc:id="cadbb031-c427-48dc-aa07-515b6a4bfa02" message='#[%dw 2.0&#10;output application/csv&#10;var summary = vars."alerts-creation-summary"&#10;---&#10;if(summary != null) {&#10;	(summary map(alert) -&gt; {&#10;	    	"count": $$ + 1,&#10;	    	"alertId":alert.alertId,&#10;    		"alertName": alert.alertName,&#10;    		"applicationId": alert.resource.appId,&#10;  	    	"metricType":alert.metricType,&#10;    		"severity":alert.severity&#10;	})&#10;}&#10;else&#10;	{&#10;		"message" : "No Alerts Created or Errors while creating Alerts"&#10;	}]'/>
+	</sub-flow>
+	<sub-flow name="createalerts_sub_flow" doc:id="e2ffb82c-4386-4c9b-8d04-56e7abfc8105" >
+		<try doc:name="Try" doc:id="bc2f3d0c-1871-4b3d-ba38-8cbd419a9801" >
+			<logger level="INFO" doc:name="log_alert_creation_step" doc:id="688f1d77-b20a-4f9a-a182-a7d9d8d88c53" message='#["creating Alert " ++ payload.alertName ++ " for application " ++ payload.resource.appId]' />
+			<http:request method="POST" doc:name="alerts_creation_request" doc:id="e6ab34f7-a89b-4a5c-9ec3-9001601bd91a" config-ref="anypoint_platform_API" path="${anypoint.platform.api.alerts.basepath}/${anypoint.org.id}/alerts">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	Authorization : "Bearer " ++ vars.access_token
+}]]]></http:headers>
+		</http:request>
+			<ee:transform doc:name="alerts-creation-summary" doc:id="8a978524-06b1-4f85-abe8-706657f68061" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="alerts-creation-summary" ><![CDATA[%dw 2.0
+output application/json
+
+var responsePayload = [payload]
+---
+if(vars."alerts-creation-summary" == null) 
+	responsePayload
+else
+	vars."alerts-creation-summary" ++ responsePayload]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</try>
+	</sub-flow>
+</mule>

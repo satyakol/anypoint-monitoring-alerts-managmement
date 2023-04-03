@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="anypoint_get_oauth_accesstoken" doc:id="dbb0198c-d43d-486f-9b8a-82860fc74570" >
+		<async doc:name="Log Step" doc:id="5028fdbf-f57a-4e18-9ca1-d3f9ea1ceab3" >
+			<logger level="INFO" doc:name="Logger" doc:id="68b9117e-7c9b-4cc8-a25e-163582c7e7dc" message="Getting Anypoint Org Access Token using Connected APPs "/>
+		</async>
+		<ee:transform doc:name="set_client_credential_payload" doc:id="f4a0a28b-71be-4245-aa82-f168df56d7f2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "client_id"     : Mule::p("secure::anypoint.connectedapp.id"),
+    "client_secret" : Mule::p("secure::anypoint.connectedapp.secret"),
+    "grant_type"    : "client_credentials"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="POST accounts/api/v2/oauth2/token" doc:id="fe0652c6-ee4b-4600-8981-99f23c95a6cb" config-ref="anypoint_platform_API" path="/accounts/api/v2/oauth2/token" target="access_token" targetValue="#[payload.access_token]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="ff8462ab-89cf-4608-8d5f-6b07c74ed5ae" message="#[payload]"/>
+	</sub-flow>
+</mule>

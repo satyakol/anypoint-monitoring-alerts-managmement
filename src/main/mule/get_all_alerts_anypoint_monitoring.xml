@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="get_all_alerts_anypoint_monitoringFlow" doc:id="99d4f6fd-05ee-4a9d-ab02-9ce68b89596e" >
+		<http:listener doc:name="GET /alerts" doc:id="cfa8f2e4-d0e5-4a56-a782-a58f2dcdee0c" config-ref="HTTP_Listener_config" path="/alerts" allowedMethods="GET"/>
+		<flow-ref doc:name="anypoint_get_oauth_accesstoken" doc:id="02beda83-4551-442c-833d-13590863571a" name="anypoint_get_oauth_accesstoken"/>
+		<flow-ref doc:name="get_all_alerts_anypoint_monitoring_sub_flow" doc:id="9f068613-4518-4068-9916-c595e7271666" name="get_all_alerts_anypoint_monitoring_sub_flow"/>
+	</flow>
+	<sub-flow name="get_all_alerts_anypoint_monitoring_sub_flow" doc:id="f2e5718e-0638-4492-ba04-20bc16666ebb" >
+		<http:request method="GET" doc:name="GET all Anypoint Monitoring Alerts" doc:id="8f8c4814-552a-4250-aca6-4520de262985" config-ref="anypoint_platform_API" path="${anypoint.platform.api.alerts.basepath}/${anypoint.org.id}/alerts" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	Authorization : "Bearer " ++ vars.access_token
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	sortBy : "updated",
+	order : "descending"
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="a0215651-3fa0-4133-ac31-db4993140e66" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "alertId":payload.alertId,
+    "alertName": payload.alertName,
+    "AppName": payload.resource.appId    
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

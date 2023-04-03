@@ -1,0 +1,187 @@
+{
+	"metrics": [{
+			"metricId": "cpu_utilization_above80_5minutes",
+			"metricDetails": {
+				"alertViolationInterval": 5,
+				"aggregationInterval": 1,
+				"aggregationFunction": "mean",
+				"metricType": "cpu_utilization",
+				"properties": [{
+					"name": "operator",
+					"value": "above"
+				}, {
+					"name": "threshold",
+					"value": "0.8"
+				}],
+				"alertNotifications": [{
+					"recipients": ["satya.kolukuluri@gmail.com"],
+					"subject": "${severity}: ${resource} ${condition}",
+					"message": "Hello,\nYou are receiving this alert because:\nThe resource ${resource} has ${condition} of ${value} at ${timestamp}.\nThe resource has reached the threshold based on ${condition} defined by alert condition of ${operator} ${threshold} for ${period}.\n\nEnvironment: ${environment}\n${dashboardLink}\n${alertLink}",
+					"type": "email"
+				}],
+				"severity": "warning"
+			}
+		},
+		{
+			"metricId": "memory_utilization_above80_5minutes",
+			"metricDetails": {
+				"alertViolationInterval": 5,
+				"aggregationInterval": 1,
+				"aggregationFunction": "mean",
+				"metricType": "memory_utilization",
+				"properties": [{
+					"name": "operator",
+					"value": "above"
+				}, {
+					"name": "threshold",
+					"value": "0.8"
+				}],
+				"alertNotifications": [{
+					"recipients": ["satya.kolukuluri@gmail.com"],
+					"subject": "${severity}: ${resource} ${condition}",
+					"message": "Hello,\nYou are receiving this alert because:\nThe resource ${resource} has ${condition} of ${value} at ${timestamp}.\nThe resource has reached the threshold based on ${condition} defined by alert condition of ${operator} ${threshold} for ${period}.\n\nEnvironment: ${environment}\n${dashboardLink}\n${alertLink}",
+					"type": "email"
+				}],
+				"severity": "warning"
+			}
+		},
+		{
+			"metricId": "message_count_below5_5minutes",
+			"metricDetails": {
+				"alertViolationInterval": 5,
+				"aggregationInterval": 1,
+				"aggregationFunction": "sum",
+				"metricType": "message_count",
+				"properties": [{
+					"name": "operator",
+					"value": "below"
+				}, {
+					"name": "threshold",
+					"value": "5"
+				}],
+				"alertNotifications": [{
+					"recipients": ["satya.kolukuluri@gmail.com"],
+					"subject": "${severity}: ${resource} ${condition}",
+					"message": "Hello,\nYou are receiving this alert because:\nThe resource ${resource} has ${condition} of ${value} at ${timestamp}.\nThe resource has reached the threshold based on ${condition} defined by alert condition of ${operator} ${threshold} for ${period}.\n\nEnvironment: ${environment}\n${dashboardLink}\n${alertLink}",
+					"type": "email"
+				}],
+				"severity": "warning"
+			}
+		},
+		{
+			"metricId": "message_error_count_above2_5minutes",
+			"metricDetails": {
+				"alertViolationInterval": 5,
+				"aggregationInterval": 1,
+				"aggregationFunction": "sum",
+				"metricType": "message_error_count",
+				"properties": [{
+					"name": "operator",
+					"value": "above"
+				}, {
+					"name": "threshold",
+					"value": "2"
+				}],
+				"alertNotifications": [{
+					"recipients": ["satya.kolukuluri@gmail.com"],
+					"subject": "${severity}: ${resource} ${condition}",
+					"message": "Hello,\nYou are receiving this alert because:\nThe resource ${resource} has ${condition} of ${value} at ${timestamp}.\nThe resource has reached the threshold based on ${condition} defined by alert condition of ${operator} ${threshold} for ${period}.\n\nEnvironment: ${environment}\n${dashboardLink}\n${alertLink}",
+					"type": "email"
+				}],
+				"severity": "warning"
+			}
+		},
+		{
+			"metricId": "message_response_time_above5ms_5minutes",
+			"metricDetails": {
+				"alertViolationInterval": 5,
+				"aggregationInterval": 1,
+				"aggregationFunction": "mean",
+				"metricType": "message_response_time",
+				"properties": [{
+					"name": "operator",
+					"value": "above"
+				}, {
+					"name": "threshold",
+					"value": "5"
+				}],
+				"alertNotifications": [{
+					"recipients": ["satya.kolukuluri@gmail.com"],
+					"subject": "${severity}: ${resource} ${condition}",
+					"message": "Hello,\nYou are receiving this alert because:\nThe resource ${resource} has ${condition} of ${value} at ${timestamp}.\nThe resource has reached the threshold based on ${condition} defined by alert condition of ${operator} ${threshold} for ${period}.\n\nEnvironment: ${environment}\n${dashboardLink}\n${alertLink}",
+					"type": "email"
+				}],
+				"severity": "warning"
+			}
+		},
+		{
+			"metricId": "thread_count_above20_5minutes",
+			"metricDetails": {
+				"alertViolationInterval": 5,
+				"aggregationInterval": 1,
+				"aggregationFunction": "mean",
+				"metricType": "thread_count",
+				"properties": [{
+					"name": "operator",
+					"value": "above"
+				}, {
+					"name": "threshold",
+					"value": "20"
+				}],
+				"alertNotifications": [{
+					"recipients": ["satya.kolukuluri@gmail.com"],
+					"subject": "${severity}: ${resource} ${condition}",
+					"message": "Hello,\nYou are receiving this alert because:\nThe resource ${resource} has ${condition} of ${value} at ${timestamp}.\nThe resource has reached the threshold based on ${condition} defined by alert condition of ${operator} ${threshold} for ${period}.\n\nEnvironment: ${environment}\n${dashboardLink}\n${alertLink}",
+					"type": "email"
+				}],
+				"severity": "critical"
+			}
+		}
+	],
+	"alerts": [{
+			"alertId": "cpu_utilization_above80_5minutes",
+			"alertType": "basic",
+			"alertName": "CPU Utilization More than 80 for last 5 consecutive minutes",
+			"metricId": "cpu_utilization_above80_5minutes"
+		},
+		{
+			"alertId": "memory_utilization_above80_5minutes",
+			"alertType": "basic",
+			"alertName": "Memory Utilization More than 80 for last 5 consecutive minutes",
+			"metricId": "memory_utilization_above80_5minutes"
+		},
+        {
+			"alertId": "msg_count_below5_5minutes",
+			"alertType": "basic",
+			"alertName": "Message Count Is Below 5 for last 5 consecutive minutes",
+			"metricId": "message_count_below5_5minutes"
+		},
+        {
+			"alertId": "msg_error_count_above2_5minutes",
+			"alertType": "basic",
+			"alertName": "Message Error Count Is Above 2 for last 5 consecutive minutes",
+			"metricId": "message_error_count_above2_5minutes"
+		},
+		{
+			"alertId": "msg_resp_time_above_5ms_5minutes",
+			"alertType": "basic",
+			"alertName": "Response Time Is Above 5 Milli seconds for last 5 consecutive minutes",
+			"metricId": "message_response_time_above5ms_5minutes"
+		},
+		{
+			"alertId": "thread_count_above20_5minutes",
+			"alertType": "basic",
+			"alertName": "Thread Count Above 20 for last 5 consecutive minutes",
+			"metricId": "thread_count_above20_5minutes"
+		}
+	],
+
+	"applications": [{
+			"appId": "nettools",
+			"alertId": ["cpu_utilization_above80_5minutes", "memory_utilization_above80_5minutes","msg_count_below5_5minutes"]
+		}
+		
+
+	]
+
+}

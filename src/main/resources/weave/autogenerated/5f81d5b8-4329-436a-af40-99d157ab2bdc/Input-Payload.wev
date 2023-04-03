@@ -1,0 +1,8 @@
+%dw 2.0
+
+type auto_5f81d5b8_4329_436a_af40_99d157ab2bdc_Input_Payload = {|
+  client_id: String, 
+  client_secret: String, 
+  grant_type: String
+|}
+

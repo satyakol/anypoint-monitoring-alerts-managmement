@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="get-all-ch2-application-details-main-flow" doc:id="a39caadd-2849-4d80-b81e-63bf6b85e3a9" >
+		<http:listener doc:name="GET /applications/ch2" doc:id="12328e55-0254-4873-aea9-32154c74dbb4" config-ref="HTTP_Listener_config" path=" /applications/ch2"/>
+		<ee:transform doc:name="Transform Message" doc:id="c829db45-8df2-454f-bfe0-5baeb0b8ab12" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="anypoint_get_oauth_accesstoken" doc:id="9a3fc0b9-29af-4e3f-89d9-ceea66af9ed3" name="anypoint_get_oauth_accesstoken"/>
+		<flow-ref doc:name="get-all-ch2-application-details_sub_flow" doc:id="1960a86d-4331-4896-9874-69aeda8e6a70" name="get-all-ch2-application-details_sub_flow"/>
+		<logger level="INFO" doc:name="Log_summary" doc:id="23ec340a-df7d-4a25-8f05-b90cc8e575bd" message='#["Total Application are: " ++ payload.total]'/>
+	</flow>
+	<sub-flow name="get-all-ch2-application-details_sub_flow" doc:id="5f81d5b8-4329-436a-af40-99d157ab2bdc" >
+		<http:request method="GET" doc:name="GET all CH2.0 Applications" doc:id="6f4000fc-f72f-4c05-9416-6ab7103328c9" config-ref="anypoint_platform_API" path="${anypoint.platform.api.application.basepath}/${anypoint.org.id}/environments/${anypoint.environment.id}/deployments">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	Authorization : "Bearer " ++ vars.access_token
+}]]]></http:headers>
+		</http:request>
+	</sub-flow>
+</mule>

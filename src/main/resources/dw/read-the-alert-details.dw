@@ -1,0 +1,33 @@
+%dw 2.0
+output application/json
+var alertsDataFile = readUrl("classpath://" ++ Mule::p("mule.env") ++ "/" ++ Mule::p("alerts.config.file"),"application/json")
+//var alertsDataFile = payload
+var masterorgID = ""
+var organizationId = ""
+var environmentId = ""
+var clusterId = ""
+
+---
+flatten (
+alertsDataFile.applications map (app) -> app.alertId map (app_alert_id) -> {
+        "appId": app.appId,
+        "alertId": app_alert_id,
+         (alertsDataFile.alerts filter ($.alertId contains app_alert_id) map (alert) -> {
+            "alertType" : alert.alertType,
+            "alertName" : alert.alertName,
+            "masterOrganizationId": "affa90ee-badd-4bb6-a560-c1a6d0882892",
+            "organizationId": "affa90ee-badd-4bb6-a560-c1a6d0882892",
+            "resource": {
+                "type": "application",
+                "organizationId": "affa90ee-badd-4bb6-a560-c1a6d0882892",
+                "environmentId": "83444df3-fc7b-4075-b154-629448d3498e",
+                "deploymentType": "RTF",
+                "clusterId": "bd0d3008-f24a-46e8-a20c-e2764426e983",
+                "appId": app.appId
+            },
+            (alertsDataFile.metrics filter ($.metricId contains  alert.metricId) map (metric) ->
+                 metric.metricDetails
+             )
+        })
+}
+)

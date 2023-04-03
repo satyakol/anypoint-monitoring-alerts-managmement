@@ -1,0 +1,8 @@
+%dw 2.0
+
+type auto_e2ffb82c_4386_4c9b_8d04_56e7abfc8105_Output_Variables_alerts_summary = {|
+  appId: Any, 
+  alertId: Any, 
+  alertName: Any
+|}
+

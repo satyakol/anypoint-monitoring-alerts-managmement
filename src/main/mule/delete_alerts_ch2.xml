@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="delete_alerts_ch2_main_flow" doc:id="b1e4ee87-377a-4377-8bc4-119ae084a80f" >
+		<http:listener doc:name="DELETE /alerts" doc:id="e544c908-5092-4d16-bc26-912fe4a2c6a9" config-ref="HTTP_Listener_config" path="/alerts" allowedMethods="DELETE"/>
+		<ee:transform doc:name="create_alerts_list" doc:id="f90a9b46-df0d-4466-a757-55d5418f3874" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="alerts_list" ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-variable>
+				<ee:set-variable variableName="alerts-deletion-success-summary" ><![CDATA[%dw 2.0
+output application/java
+---
+null]]></ee:set-variable>
+				<ee:set-variable variableName="alerts-deletion-errors-summary" ><![CDATA[%dw 2.0
+output application/java
+---
+null]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="anypoint_get_oauth_accesstoken" doc:id="3cfff26e-5eaf-4acc-85c4-c8e5c203eba1" name="anypoint_get_oauth_accesstoken"/>
+		<flow-ref doc:name="delete_alerts_ch2_sub_flow" doc:id="b23aad03-8a2b-48d9-9e6d-9416005950cd" name="delete_alerts_ch2_sub_flow"/>
+		<ee:transform doc:name="set-response-payload" doc:id="7c30bd7d-cc84-4f2a-ae80-fe02df6a8245" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"SuccessfullyDeletedAlerts": if(vars."alerts-deletion-success-summary" == null) "None" else vars."alerts-deletion-success-summary",
+	"AlertsFailedToDelete": if(vars."alerts-deletion-errors-summary" == null) "None" else vars."alerts-deletion-errors-summary"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<sub-flow name="delete_alerts_ch2_sub_flow" doc:id="5c0b0909-f069-4f06-b476-580a386e1fc6" >
+		<foreach doc:name="each_alert_id" doc:id="bb6073ef-260c-4a2b-87ad-7997d5384734" collection="vars.alerts_list">
+			<try doc:name="Try" doc:id="6d256b3b-8d92-4c7f-9b3a-9a054b6bc88d" >
+				<http:request method="DELETE" doc:name="DELETE Alerts" doc:id="75fbe2c7-8bc9-41de-940d-9a1f885a25b6" config-ref="anypoint_platform_API" path="${anypoint.platform.api.alerts.basepath}/${anypoint.org.id}/alerts/{alertId}">
+				<http:headers><![CDATA[#[output application/java
+---
+{
+	Authorization : "Bearer " ++ vars.access_token
+}]]]></http:headers>
+				<http:uri-params><![CDATA[#[output application/java
+---
+{
+	alertId : payload
+}]]]></http:uri-params>
+			</http:request>
+				<ee:transform doc:name="alerts-deletion-summary" doc:id="b262d7da-df90-4e32-a2fe-02f7615b8fea">
+				<ee:message>
+				</ee:message>
+				<ee:variables>
+						<ee:set-variable variableName="alerts-deletion-success-summary" ><![CDATA[%dw 2.0
+output application/json
+
+var alertId = [vars.alerts_list[vars.counter-1]]
+---
+if(vars."alerts-deletion-success-summary" == null) 
+	alertId
+else
+	vars."alerts-deletion-success-summary" ++ alertId]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f3448062-7872-4f7b-9534-9a79e41b74d4" type="ANY">
+						<ee:transform doc:name="errors_summary" doc:id="76d8ca57-4320-441b-9525-d68fcacbe3cd" >
+							<ee:message >
+							</ee:message>
+							<ee:variables >
+								<ee:set-variable variableName="alerts-deletion-errors-summary" ><![CDATA[%dw 2.0
+output application/json
+var errorsSummary = 
+[{
+	"originalPayload": payload,
+	"error-description": error.description
+}]
+---
+if (vars."alerts-deletion-errors-summary" == null)
+	errorsSummary
+else 
+	vars."alerts-deletion-errors-summary" ++ errorsSummary]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</foreach>
+	</sub-flow>
+</mule>
