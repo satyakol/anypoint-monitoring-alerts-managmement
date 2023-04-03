@@ -95,7 +95,7 @@ Use the Mulesoft application that is mentioned here as a reference only.  This i
 ## Understanding the Sample Demo Application to create multiple alerts 
 
 ## Points to Consider
-1. The following properties needs to be updated either in local/local.properties or dev/dev.properties based on the environment variable. 
+1. The properties needs to be updated either in local/local.properties or dev/dev.properties based on the environment variable. 
         ##Anypoint Org Configurations 
         anypoint.master.org.id = 
         anypoint.org.id = 
